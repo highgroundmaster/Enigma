@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-import requests
-import os 
+import requests 
 import json
 
 url = "https://dev132-cricket-live-scores-v1.p.rapidapi.com"
@@ -12,11 +11,16 @@ with open('config.json') as f:
     
 class CricScore(commands.Cog):
 
+    #Utitility Functions
+    
     def __init__(self,client):
         self.client = client
         
     
-    def scorecard(self,**score):
+    def scorecard(self,match_id):
+        resp = requests.get(f"{url}/scorecards.php?seriesid={series_id}&matchid={match_id}", headers = headers)
+        js = resp.json()
+        score = js['fullScorecard']
         s = ''
         for inn in score['innings']:
             s += '\n' + inn['name'] + '\n'
@@ -45,15 +49,16 @@ class CricScore(commands.Cog):
         s=""
         for match in match_list:
             s = f"{match['name']} : {match['homeTeam']['name']} vs {match['awayTeam']['name']} : {match['id']}" 
-            await ctx.send(s)    
+            await ctx.send(s)
+            
+                
         
     @commands.command()
     async def gscore(self,ctx,match_id):
-        resp = requests.get(f"{url}/scorecards.php?seriesid={series_id}&matchid={match_id}", headers = headers)
-        js = resp.json()
-        score = js['fullScorecard']
-        s=self.scorecard(**score)
+        s=self.scorecard(match_id)
         await ctx.send(s)
+        
+        
         
     @commands.command()
     async def live(self,ctx):
@@ -68,7 +73,7 @@ class CricScore(commands.Cog):
             for match in match_list:
                 s += f"{match['name']} : {match['homeTeam']['name']} vs {match['awayTeam']['name']} : {match['id']}" + '\n'
                 s += match['matchSummaryText'] + '\n'
-                s += self.scorecard(**match['fullScorecard'])
+                s += self.scorecard(match['id'])
                 s += '\n\n'
                 await ctx.send(s)
             
