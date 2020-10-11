@@ -1,6 +1,7 @@
 import discord
 import os
 from discord.ext import commands
+from botkey import *
 
 client = commands.Bot(command_prefix = '.')
 
@@ -35,4 +36,4 @@ for filename in os.listdir('./cogs'):
 
 
 
-client.run('NzYwMDU2NDE2OTQ5MzcwOTA5.X3Gfsg.lGMgtSiIzO_XSSTp-AVV5qe6y_A')
+client.run(botkey)
