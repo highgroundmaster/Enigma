@@ -59,7 +59,8 @@ class User(commands.Cog):
                 'Gabbar : Shikhar Dhawan',
                 'Warner you are warned : David Warner'
                 'Russell Muscle : Andre Russell',
-                'Captain Cool : MS Dhoni']
+                'Captain Cool : MS Dhoni',
+                'World Boss : Chris Gayle']
 
         await ctx.send(f' {random.choice(tags)}')
 
