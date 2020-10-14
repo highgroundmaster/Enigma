@@ -2,6 +2,7 @@ import discord
 import requests
 from discord.ext import commands
 import json
+from bs4 import BeautifulSoup 
 
 url = "https://dev132-cricket-live-scores-v1.p.rapidapi.com"
 series_id = 2514
@@ -29,18 +30,34 @@ class CricInfo(commands.Cog):
     
               
     def getplayerinfo(self,**player):
-        s=""
-        s = f"Name : {player['fullName']}\n"
-        s += f"Player Type : {player['playerType']}\n"
-        s += f"Batting Style : {player['battingStyle']}\n"
-        s += f"Bowling Style : {player['bowlingStyle']}\n"
-        s += f"DOB : {player['dob'][:10]}\n"
-        s += f"Test Debut : {player['testDebutDate'][:4]}\n"
-        s += f"ODI Debut : {player['odiDebutDate'][:4]}\n"
-        s += f"T20 Debut : {player['t20DebutDate'][:4]}\n"
-        s += f"{player['imageURL']}\n"
-        return s
-        
+        e = discord.Embed(
+            title = team[0][0],
+            description = '',
+            colour = discord.Colour.blue()
+            )
+        e.set_thumbnail(url=team[0][1])
+        for i in range(1,len(team)):
+            e.add_field(name=team[i][0],value=team[i][1],inline=False)
+        return e
+      
+      
+    def getplayerinfo(self,**player):
+        e = discord.Embed(
+            title = player['fullName'],
+            description = player['playerType'],
+            colour = discord.Colour.blue()
+            )
+        e.set_image(url=player['imageURL'])
+        e.add_field(name="Batting Style", value = player['battingStyle'],inline= True)
+        e.add_field(name="Bowling Style", value = player['bowlingStyle'],inline = True)
+        e.add_field(name="DOB", value = f"{player['dob'][8:10]}-{player['dob'][5:7]}-{player['dob'][:4]}",inline = False)
+        e.add_field(name="Test Debut", value = player['testDebutDate'][:4], inline =True)
+        e.add_field(name="ODI Debut", value = player['odiDebutDate'][:4],inline=True)
+        e.add_field(name="T20 Debut", value = player['t20DebutDate'][:4],inline=True)
+        if player['didYouKnow']!="":
+            e.add_field(name="Fun Fact", value = BeautifulSoup(player['didYouKnow'], 'html.parser').text,inline=True)
+        return e
+    
                                    
     #Commands
             
@@ -49,10 +66,15 @@ class CricInfo(commands.Cog):
         querystring = {"seriesid": series_id }
         response = requests.request("GET", f'{url}/seriesteams.php', headers=headers, params=querystring)
         js = response.json()['seriesTeams']['teams']
-        s=""
-        for teams in js:
-            s += f"{teams['name']} : {teams['id']}\n" 
-        await ctx.send(s)
+        e = discord.Embed(
+            title = 'Indian Premier League 2020',
+            description = "",
+            colour = discord.Colour.blue()
+            )
+        e.set_thumbnail(url='https://theenglishpost.com/wp-content/uploads/2020/08/IPL-New-Logo-2020.jpg')
+        for team in js:
+            e.add_field(name=team['name'],value=team['id'],inline=False) 
+        await ctx.send(embed=e)
         
     
     @commands.command()
@@ -62,35 +84,36 @@ class CricInfo(commands.Cog):
         js = resp.json()['playersInMatch']
         s=""
         if js['homeTeam']['team']['id'] == int(team_id):
-            s = f"{js['homeTeam']['teamName']}\n"
+            s.append((js['homeTeam']['teamName'],js['homeTeam']['team']['logoUrl']))
             for player in js['homeTeam']['players']:
-                s+= f"{player['fullName']} : {player['playerId']}\n" 
-            s += f"{js['homeTeam']['team']['logoUrl']}\n" 
-            await ctx.send(s)
+                s.append((player['fullName'],player['playerId']))
+            await ctx.send(embed=self.getteaminfo(s))
         else:
-            s = f"{js['awayTeam']['teamName']}\n"  
+            s.append((js['awayTeam']['teamName'],js['awayTeam']['team']['logoUrl']))
             for player in js['awayTeam']['players']:
-                s+= f"{player['fullName']} : {player['playerId']}\n" 
-            s += f"{js['awayTeam']['team']['logoUrl']}\n"
-            await ctx.send(s)
+                s.append((player['fullName'],player['playerId']))
+            await ctx.send(embed=self.getteaminfo(s))
+            
 
     @commands.command()
     async def iPlayer(self, ctx, team_id, player_id):
         match_id = self.getmatchid(team_id)   
         resp = requests.get(f"{url}/playersbymatch.php?seriesid={series_id}&matchid={match_id}", headers = headers)
         js = resp.json()['playersInMatch']
-        s=""
+        e=""
         if js['homeTeam']['team']['id'] == int(team_id):
             for player in js['homeTeam']['players']:
                 if player['playerId'] == int(player_id):
-                    s = self.getplayerinfo(**player)
+                    e=self.getplayerinfo(**player)
+                    e.set_thumbnail(url=js['homeTeam']['team']['logoUrl'])
                     break 
         else:
             for player in js['awayTeam']['players']:
                 if player['playerId'] == int(player_id):
-                    s = self.getplayerinfo(**player)
+                    e=self.getplayerinfo(**player)
+                    e.set_thumbnail(url=js['awayTeam']['team']['logoUrl'])
                     break 
-        await ctx.send(s)      
+        await ctx.send(embed = e)      
 
 
 def setup(client):
