@@ -29,7 +29,7 @@ class CricInfo(commands.Cog):
                return match['id']
     
               
-    def getplayerinfo(self,**player):
+    def getteaminfo(self,team):
         e = discord.Embed(
             title = team[0][0],
             description = '',
