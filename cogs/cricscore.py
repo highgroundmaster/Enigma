@@ -22,17 +22,23 @@ class CricScore(commands.Cog):
         js = resp.json()
         score = js['fullScorecard']
         s = ''
-        for inn in score['innings']:
-            s += '\n' + inn['name'] + '\n'
-            s += f"{inn['run']}-{inn['wicket']}({inn['over']})\n\n"
+        e = discord.Embed(
+            title = '',
+            description = "",
+            colour = discord.Colour.blue()
+            )
+        innings = sorted([inn for inn in score['innings']],key = lambda x : x['id'])
+        for inn in innings:
+            s = f"{inn['run']}-{inn['wicket']} ({inn['over']})\n\n"
             for bat in inn['batsmen']:
                 if bat['balls'] == '':
                     continue
-                s += bat['name'] + '  ' + bat['runs'] + '(' + bat['balls'] + ')  ' + bat['howOut'] + '\n'
+                s += f"{bat['name']}  {bat['runs']}({bat['balls']})   {bat['howOut']}\n"
             s += '\n'
             for ball in inn['bowlers']:
-                s += ball['name'] +'  '+ ball['overs'] + '-' +ball['maidens']  + '-' +ball['runsConceded'] + '-' +ball['wickets']+'\n'       
-        return s
+                s += f"{ball['name']}  {ball['overs']}-{ball['maidens']}-{ball['runsConceded']}-{ball['wickets']}\n" 
+            e.add_field(name=inn['name'][8:],value=s,inline=False)       
+        return e
         
     
     #Events
@@ -46,17 +52,21 @@ class CricScore(commands.Cog):
         js = resp.json()['matchList']['matches']
         match_list = [x for x in js if x['status'] != 'UPCOMING']
         match_list = sorted(match_list, reverse=True, key=lambda x: int(x['name'].split()[1]))[:5]
-        s=""
+        e = discord.Embed(
+            title = 'Indian Premier League 2020',
+            description = "",
+            colour = discord.Colour.blue()
+            )
+        e.set_thumbnail(url='https://theenglishpost.com/wp-content/uploads/2020/08/IPL-New-Logo-2020.jpg')
         for match in match_list:
-            s = f"{match['name']} : {match['homeTeam']['name']} vs {match['awayTeam']['name']} : {match['id']}" 
-            await ctx.send(s)
+            e.add_field(name=f"{match['name']} ({match['id']})", value=f"{match['homeTeam']['name']} vs {match['awayTeam']['name']}",inline=False) 
+        await ctx.send(embed=e)
             
                 
         
     @commands.command()
     async def gscore(self,ctx,match_id):
-        s=self.scorecard(match_id)
-        await ctx.send(s)
+        await ctx.send(embed = self.scorecard(match_id))
         
         
         
@@ -71,11 +81,10 @@ class CricScore(commands.Cog):
         else:    
             s = ''
             for match in match_list:
-                s += f"{match['name']} : {match['homeTeam']['name']} vs {match['awayTeam']['name']} : {match['id']}" + '\n'
-                s += match['matchSummaryText'] + '\n'
-                s += self.scorecard(match['id'])
-                s += '\n\n'
-                await ctx.send(s)
+                e = self.scorecard(match['id'])
+                e.title = f"{match['name']} : {match['homeTeam']['name']} vs {match['awayTeam']['name']} : {match['id']}"
+                e.description=match['matchSummaryText']
+                await ctx.send(embed = e)
             
             
     
