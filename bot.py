@@ -1,7 +1,6 @@
 import discord
 import os
 from discord.ext import commands
-from botkey import *
 
 client = commands.Bot(command_prefix = '.')
 
@@ -36,4 +35,4 @@ for filename in os.listdir('./cogs'):
 
 
 
-client.run(botkey)
+client.run(os.getenv('DISCORD_TOKEN'))

@@ -12,7 +12,7 @@ class User(commands.Cog):
 
     @commands.command()
     async def ping(self, ctx):
-        await ctx.send('Pong!')
+        await ctx.send(f"Pong! {round(self.client.latency*1000)}ms")
 
 
     @commands.command()
@@ -47,23 +47,6 @@ class User(commands.Cog):
                     ]
 
         await ctx.send(f'Hello there! \n I would like to say that: {random.choice(greetings)}')
-
-
-    @commands.command()
-    async def random_tag(self, ctx):
-        tags=['Killer Miller : David Miller',
-                'Hitman : Rohit Sharma',
-                'Thala : MS Dhoni',
-                'Mr.360 : AB Deviliers',
-                'The Run Machine : Virat Kohli',
-                'Gabbar : Shikhar Dhawan',
-                'Warner you are warned : David Warner'
-                'Russell Muscle : Andre Russell',
-                'Captain Cool : MS Dhoni',
-                'World Boss : Chris Gayle']
-
-        await ctx.send(f' {random.choice(tags)}')
-
 
 
 def setup(client):
