@@ -20,10 +20,10 @@ class User(commands.Cog):
         responses=['Absolutely',
                    'Answer Unclear Ask Later',
                    'Cannot Foretell Now',
-                   'Yes of course'
+                   'Yes of course',
                    'Chances do not seem Good',
-                   'Ask me if I care'
-                   'Very doubtful'
+                   'Ask me if I care',
+                   'Very doubtful',
                    'The chances of the Sun rising from the West is more',
                    'Reply hazy, try again later',
                    'Now that is a tricky one',
