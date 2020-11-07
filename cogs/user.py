@@ -16,6 +16,11 @@ class User(commands.Cog):
 
 
     @commands.command()
+    async def clear(self, ctx, amount = 5):
+        await ctx.channel.purge(limit = amount)
+
+
+    @commands.command()
     async def tellme(self, ctx, *, question):
         responses=['Absolutely',
                    'Answer Unclear Ask Later',

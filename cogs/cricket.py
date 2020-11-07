@@ -44,6 +44,11 @@ class Cricket(commands.Cog):
             for ball in inn['bowlers']:
                 s += f"{ball['name']}  {ball['overs']}-{ball['maidens']}-{ball['runsConceded']}-{ball['wickets']}\n"
             e.add_field(name = inn['name'][8:], value = s, inline = False)
+            awards = js['fullScorecardAwards']
+        if awards['mostRunsAward']['name'] != '':
+            e.add_field(name = 'Most Runs', value = f"{awards['mostRunsAward']['name']}  {awards['mostRunsAward']['runs']}({awards['mostRunsAward']['balls']})", inline = True)
+            e.add_field(name = 'Most Wickets', value = f"{awards['mostWicketsAward']['name']}  {awards['mostWicketsAward']['overs']}-{awards['mostWicketsAward']['runsConceded']}-{awards['mostWicketsAward']['wickets']}", inline = True)
+            e.add_field(name = 'Man of the Match', value = awards['manOfTheMatchName'], inline = False)
         return e
 
 
@@ -115,7 +120,10 @@ class Cricket(commands.Cog):
         resp = requests.get(f'{url}/matchseries.php', headers = headers, params=querystring)
         js = resp.json()['matchList']['matches']
         match_list = [x for x in js if x['status'] != 'UPCOMING']
-        match_list = sorted(match_list, reverse = True, key = lambda x: int(x['name'].split()[1]))[:5]
+        if len(match_list) <= 5:
+                match_list = sorted(match_list, reverse = True, key = lambda x: int(x['id']))
+        else:
+            match_list = sorted(match_list, reverse = True, key = lambda x: int(x['id']))[:5]
         e = discord.Embed(
             title = 'Indian Premier League 2020',
             description = "",
@@ -129,7 +137,15 @@ class Cricket(commands.Cog):
 
     @commands.command()
     async def gscore(self, ctx, match_id):
-        await ctx.send(embed = self.scorecard(match_id))
+        querystring = {"seriesid": series_id }
+        resp = requests.get(f'{url}/matchseries.php', headers = headers, params=querystring)
+        js = resp.json()['matchList']['matches']
+        for match in js:
+            if match['id'] == int(match_id):
+                e = self.scorecard(match_id)
+                e.title = f"{match['name']} : {match['homeTeam']['name']} vs {match['awayTeam']['name']} : {match['id']}"
+                e.description=match['matchSummaryText']
+                await ctx.send(embed = e)
 
 
     @commands.command()
