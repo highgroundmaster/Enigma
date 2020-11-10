@@ -47,7 +47,9 @@ class Cricket(commands.Cog):
             awards = js['fullScorecardAwards']
         if awards['mostRunsAward']['name'] != '':
             e.add_field(name = 'Most Runs', value = f"{awards['mostRunsAward']['name']}  {awards['mostRunsAward']['runs']}({awards['mostRunsAward']['balls']})", inline = True)
+        if awards['mostWicketsAward']['name'] != '':
             e.add_field(name = 'Most Wickets', value = f"{awards['mostWicketsAward']['name']}  {awards['mostWicketsAward']['overs']}-{awards['mostWicketsAward']['runsConceded']}-{awards['mostWicketsAward']['wickets']}", inline = True)
+        if awards['manOfTheMatchId'] != -1:
             e.add_field(name = 'Man of the Match', value = awards['manOfTheMatchName'], inline = False)
         return e
 
